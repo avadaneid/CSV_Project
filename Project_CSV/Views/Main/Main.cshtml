@@ -1,0 +1,252 @@
+﻿@model Project_CSV.Models.BankingModel
+@using Project_CSV.Models
+@using System.Data
+
+@{
+    var getlist = ViewBag.List as IEnumerable<Project_CSV.Models.BankingModel>;
+
+}
+
+
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Main</title>
+</head>
+<body>
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.css" />
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {           
+            $('#verticalScroll').DataTable({
+                "scrollY": "50vh",
+                "scrollCollapse": true,
+            });
+            $('.dataTables_length').addClass('bs-select');
+
+                        
+            $.get('@Url.Action("Graph")', function (response) {
+                console.log(response);
+                var loanAmounts = [];
+                var names = [];
+                var interestRate = [];
+
+                for (var i = 0; i < response.length; i++) {
+                    loanAmounts.push(response[i].LoanAmount);
+                    names.push(response[i].Name);
+                    interestRate.push(response[i].InterestRate);
+                }
+
+                console.log("arrr: " + loanAmounts + " names " + names);
+                var ctxL = document.getElementById("lineChart").getContext('2d');
+                var myLineChart = new Chart(ctxL, {
+                type: 'line',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: "Loan Amounts",
+                        data: loanAmounts,                 
+                        backgroundColor: [
+                            'rgba(105, 0, 132, .2)',
+                        ],
+                        borderColor: [
+                            'rgba(200, 99, 132, .7)',
+                        ],
+                        borderWidth: 2,                       
+                    },
+                    {
+                        label: "Interest Rate",
+                        data: interestRate,                 
+                        backgroundColor: [
+                        'rgba(0, 137, 132, .2)',
+                            ],
+                        borderColor: [
+                        'rgba(0, 10, 130, .7)',
+                        ],
+                        borderWidth: 2,                       
+                    }
+                    ]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+            });
+        });     
+ 
+    </script>
+
+
+    @using (Html.BeginForm("Insert","Main",FormMethod.Post))
+    {
+
+        @Html.AntiForgeryToken()
+
+        <div>
+
+            <div class="form-horizontal" style="width: 20%;float:right">
+
+                <h4>BankingModel</h4>
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PIN, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.PIN, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.PIN, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Surname, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Surname, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Surname, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.LoanAmount, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.LoanAmount, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.LoanAmount, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.InterestPercent, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.InterestPercent, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.InterestPercent, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IsVariable, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10" style="display:inline">
+                        <div class="checkbox" style="display:inline" value=false id="isVariable">
+                            @Html.EditorFor(model => model.IsVariable)                           
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" id="post" value="Create" class="btn btn-success" />
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div style="width:70% ; float :left">
+                <table id="verticalScroll" class="table table-striped table-bordered table-sm" cellspacing="0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.PIN)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Surname)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.LoanAmount)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.InterestPercent)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.IsVariable)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.InterestRate)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Principal)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.List != null)
+                        {
+                            foreach (BankingModel o in getlist)
+                            {
+
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(model => o.PIN)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.Surname)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.LoanAmount)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.InterestPercent)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.IsVariable)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.InterestRate)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => o.Principal)
+                                    </td>
+                                </tr>
+
+                            }
+
+                         }
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    }
+
+
+
+    @using (Html.BeginForm("Upload", "Main", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <input type="file" name="file" />
+        <input type="submit" value="OK" class="btn btn-primary active" />
+    }
+
+    @using (Html.BeginForm("Download", "Main", FormMethod.Get, new { enctype = "multipart/form-data" }))
+    {
+        <type class="btn">
+            <a href="~/Main/Download" class="btn btn-primary btn-lg active">Download!</a>
+        </type>
+    }
+
+    <canvas id="lineChart"></canvas>
+
+</body>
+</html>
