@@ -29,9 +29,7 @@ namespace Project_CSV.Controllers
         private static double InterestRate { get; set; }
         private static double Principal { get; set; }
         public  static double CalculateInterestRate(IBankingModel bm)
-        {
-            Task.Run(() =>
-            {
+        {         
                 switch (bm.IsVariable)
                 {
                     case true:
@@ -41,22 +39,20 @@ namespace Project_CSV.Controllers
                         InterestRate = bm.InterestPercent * bm.LoanAmount;
                         break;
                 }
-            });
+        
             return InterestRate;
         }
 
         public static double CalculatePrincipal(IBankingModel bm)
-        {
-            Task.Run(() => { Principal = bm.LoanAmount - InterestRate; });           
-            return Principal;
+        {          
+           Principal = bm.LoanAmount - InterestRate;         
+           return Principal;
         } 
 
     }
 
     class IO:Controller
     {
-
-        //public static string location = ConfigurationManager.AppSettings["FileLocation"];
         public static string[] reader = Array.Empty<string>();
         public static string[] item = Array.Empty<string>();
         public static List<BankingModel> lst;
@@ -67,9 +63,6 @@ namespace Project_CSV.Controllers
             _path = new PathL();          
             lst = new List<BankingModel>();
             reader = System.IO.File.ReadAllLines(_path.MapPath);
-
-            //stream = await System.IO.File.OpenText(_path.MapPath).ReadToEndAsync();         
-            //reader = stream.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             for (var i = 0; i < reader.Length; i++)
             {
@@ -114,8 +107,12 @@ namespace Project_CSV.Controllers
 
         [HttpGet]
         public ActionResult Graph()
-        {         
-            var list  =  IO.Read();          
+        {
+            var list = new List<BankingModel>(); ;
+            if (System.IO.File.Exists($"{_path.MapPath}"))
+            {
+                list = IO.Read();
+            }
             return Json(list.ToArray(),JsonRequestBehavior.AllowGet);
         }
 
@@ -127,7 +124,7 @@ namespace Project_CSV.Controllers
             {
 
                 a.WriteLine($"{bm.PIN},{bm.Name},{bm.Surname},{bm.LoanAmount}," +
-                    $"{bm.InterestPercent},{bm.IsVariable},{Matrix.CalculateInterestRate(bm).ToString()},{Matrix.CalculatePrincipal(bm).ToString()}");
+                    $"{bm.InterestPercent},{bm.IsVariable},{Matrix.CalculateInterestRate(bm).ToString("F")},{Matrix.CalculatePrincipal(bm).ToString("F")}");
 
             }
             return RedirectToAction("Main");
